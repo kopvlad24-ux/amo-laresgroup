@@ -121,7 +121,7 @@
 
 <header>
   <div class="logo-block">
-    <div class="logo">LARESGROUP</div>
+    <div class="logo">F | H</div>
     <div class="logo-sub" id="group-label">ВСЕ ОТДЕЛЫ</div>
   </div>
   <div class="header-center">
@@ -219,8 +219,11 @@
 <div class="toast" id="toast"></div>
 
 <script>
-let cfg = {}, allLeads = [], newLeads = [], _lastUsers = {}, _lastStages = {};
+let cfg = {}, _lastUsers = {}, _lastStages = {};
 let currentBrokerFilter = 'all', currentGroup = 'all';
+
+// Кэш — загружается один раз
+let _cache = { allLeads: [], newLeads: [], tasks: [], users: {}, stages: {}, loaded: false };
 
 // Группы по фамилии
 const GROUPS = {
@@ -240,7 +243,13 @@ function switchGroup(group, btn) {
   document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('group-label').textContent = group === 'all' ? 'ВСЕ ОТДЕЛЫ' : GROUPS[group].label;
-  if (cfg.token) loadAll();
+  if (!cfg.token) return;
+  if (_cache.loaded) {
+    // Данные уже есть — просто перефильтровываем мгновенно
+    applyGroupFilter();
+  } else {
+    loadAll();
+  }
 }
 
 // Матчинг этапов по ключевым словам
@@ -331,40 +340,56 @@ async function loadAll() {
   hideMessages(); setStatus('loading');
   const btn=document.getElementById('btn-refresh');
   btn.disabled=true; btn.textContent='↻ ЗАГРУЗКА...';
+  _cache.loaded = false;
   try {
     const usersRaw = await fetchAll('users');
     const users = {};
     usersRaw.forEach(u=>users[u.id]=u.name);
-    const filteredUserIds = new Set(usersRaw.filter(u=>userInGroup(u.name,currentGroup)).map(u=>u.id));
 
     const pipelinesRaw = await fetchAll('leads/pipelines');
     const stages = {};
     pipelinesRaw.forEach(p=>(p._embedded?.statuses||[]).forEach(s=>stages[s.id]={name:s.name,pipeline:p.name,pipelineId:p.id}));
 
-    // Ищем "отдел продаж"
     const pipeline = pipelinesRaw.find(p=>p.name&&p.name.toLowerCase().includes('отдел продаж'));
     const pipelineId = pipeline?pipeline.id:null;
 
-    allLeads = (await fetchAll('leads',{'with':'tags'}))
-      .filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!pipelineId||l.pipeline_id===pipelineId));
+    // Грузим ВСЕХ — без фильтра по группе
+    const allLeadsRaw = (await fetchAll('leads',{'with':'tags'}))
+      .filter(l=>(!pipelineId||l.pipeline_id===pipelineId));
 
     const dateFrom=toTs(cfg.dateFrom||document.getElementById('inp-date-from').value);
     const dateTo=toTs(cfg.dateTo||document.getElementById('inp-date-to').value)+86399;
-    const newLeadsAll = await fetchAll('leads',{'filter[created_at][from]':dateFrom,'filter[created_at][to]':dateTo,'with':'tags'});
-    newLeads = newLeadsAll.filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!pipelineId||l.pipeline_id===pipelineId));
+    const newLeadsRaw = (await fetchAll('leads',{'filter[created_at][from]':dateFrom,'filter[created_at][to]':dateTo,'with':'tags'}))
+      .filter(l=>(!pipelineId||l.pipeline_id===pipelineId));
 
-    const allLeadIds = new Set(allLeads.map(l=>l.id));
+    const allLeadIds = new Set(allLeadsRaw.map(l=>l.id));
     const tasksRaw = await fetchAll('tasks',{'filter[is_completed]':0});
     const tasks = tasksRaw.filter(t=>t.entity_type==='leads'&&allLeadIds.has(t.entity_id));
 
+    // Сохраняем всё в кэш
+    _cache = { allLeads: allLeadsRaw, newLeads: newLeadsRaw, tasks, users, stages, loaded: true };
     _lastUsers=users; _lastStages=stages;
-    renderDashboard(allLeads,newLeads,tasks,users,stages);
-    setStatus('ok'); showToast('Данные обновлены');
+
+    setStatus('ok'); showToast('Данные загружены');
     const from=cfg.dateFrom||document.getElementById('inp-date-from').value;
     const to=cfg.dateTo||document.getElementById('inp-date-to').value;
     document.getElementById('period-label').textContent=`${from} — ${to}`;
+
+    // Рендерим с текущей группой
+    applyGroupFilter();
   } catch(e){setStatus('err');showError(e.message);showToast(e.message,'error');console.error(e);}
   finally{btn.disabled=false;btn.textContent='↻ ОБНОВИТЬ';}
+}
+
+function applyGroupFilter() {
+  // Фильтруем кэш по текущей группе — мгновенно, без запросов
+  const { allLeads, newLeads, tasks, users, stages } = _cache;
+  const leads  = allLeads.filter(l => userInGroup(users[l.responsible_user_id]||'', currentGroup));
+  const newL   = newLeads.filter(l => userInGroup(users[l.responsible_user_id]||'', currentGroup));
+  // Задачи фильтруем по лидам выбранной группы
+  const leadIds = new Set(leads.map(l=>l.id));
+  const filtTasks = tasks.filter(t=>leadIds.has(t.entity_id));
+  renderDashboard(leads, newL, filtTasks, users, stages);
 }
 
 function renderDashboard(leads,newL,tasks,users,stages) {
@@ -503,7 +528,8 @@ function filterLeads(broker,e){
   currentBrokerFilter=broker;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   if(e) e.target.classList.add('active');
-  renderLeads(newLeads);
+  const newL = _cache.newLeads.filter(l => userInGroup(_cache.users[l.responsible_user_id]||'', currentGroup));
+  renderLeads(newL);
 }
 
 function renderLeads(leads){
