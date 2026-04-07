@@ -115,6 +115,43 @@
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.error { background: var(--red); }
   .empty { text-align: center; padding: 36px; color: var(--muted2); font-family: 'Space Mono', monospace; font-size: 11px; }
+
+  /* BROKER DRILLDOWN */
+  .drilldown-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; }
+  .drilldown-overlay.open { display: block; }
+  .drilldown-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(820px, 100vw);
+    background: var(--bg); border-left: 2px solid var(--border-strong);
+    overflow-y: auto; z-index: 201;
+    transform: translateX(100%); transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .drilldown-panel.open { transform: translateX(0); }
+  .drilldown-header {
+    display: flex; align-items: stretch; justify-content: space-between;
+    border-bottom: 2px solid var(--border-strong); position: sticky; top: 0; background: var(--bg); z-index: 10;
+  }
+  .drilldown-title-block { padding: 16px 24px; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+  .drilldown-name { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .drilldown-sub { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
+  .drilldown-close { font-family: 'Space Mono', monospace; font-size: 18px; background: none; border: none; border-left: 1px solid var(--border); padding: 0 24px; cursor: pointer; color: var(--muted); transition: all 0.12s; }
+  .drilldown-close:hover { background: var(--text); color: var(--bg); }
+
+  .drilldown-kpi { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); }
+  .drilldown-kpi .kpi-card { padding: 20px 18px; }
+  .drilldown-kpi .kpi-value { font-size: 36px; }
+
+  .drilldown-body { padding: 24px; }
+  .drilldown-body .section-title { margin-top: 4px; }
+
+  .broker-link { cursor: pointer; text-decoration: none; color: inherit; border-bottom: 1px solid transparent; transition: border-color 0.12s; }
+  .broker-link:hover { border-bottom-color: var(--text); }
+
+  .stage-bar-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .stage-bar-row:last-child { border-bottom: none; }
+  .stage-bar-name { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); flex: 1; }
+  .stage-bar-track { flex: 2; height: 6px; background: var(--surface2); position: relative; }
+  .stage-bar-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--text); transition: width 0.4s ease; }
+  .stage-bar-count { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; min-width: 28px; text-align: right; }
 </style>
 </head>
 <body>
@@ -215,6 +252,19 @@
     </div>
   </div>
 </main>
+
+<div class="drilldown-overlay" id="dd-overlay" onclick="closeDrilldown()"></div>
+<div class="drilldown-panel" id="dd-panel">
+  <div class="drilldown-header">
+    <div class="drilldown-title-block">
+      <div class="drilldown-name" id="dd-name">—</div>
+      <div class="drilldown-sub" id="dd-sub">брокер</div>
+    </div>
+    <button class="drilldown-close" onclick="closeDrilldown()">✕</button>
+  </div>
+  <div class="drilldown-kpi" id="dd-kpi"></div>
+  <div class="drilldown-body" id="dd-body"></div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -437,7 +487,7 @@ function renderDashboard(leads,newL,tasks,users,stages) {
     const convNum=typeof conv==='number'?conv:0;
     const odClass=overdue>10?'badge-danger':overdue>3?'badge-warn':'badge-muted';
     return `<tr>
-      <td class="broker-name">${b.name}</td>
+      <td class="broker-name"><span class="broker-link" onclick="openBroker(${b.uid})">${b.name}</span></td>
       <td class="num">${b.leads.length}</td><td class="num">${qual}</td>
       <td class="num">${meet}</td><td class="num">${show}</td>
       <td class="num">${book}</td><td class="num">${deal}</td>
@@ -555,7 +605,109 @@ function renderLeads(leads){
   }).join('');
 }
 
-function stageIs(name,...keys){const n=(name||'').toLowerCase();return keys.some(k=>n.includes(k.toLowerCase()));}
+function openBroker(uid) {
+  const { allLeads, newLeads, tasks, users, stages } = _cache;
+  const name = users[uid] || `ID:${uid}`;
+  const leads   = allLeads.filter(l => l.responsible_user_id === uid);
+  const newL    = newLeads.filter(l => l.responsible_user_id === uid);
+  const leadIds = new Set(leads.map(l => l.id));
+  const bTasks  = tasks.filter(t => leadIds.has(t.entity_id));
+  const now     = Math.floor(Date.now()/1000);
+
+  const activeLeads  = leads.filter(l => isActive(stages[l.status_id]?.name||''));
+  const qualLeads    = leads.filter(l => isQual(stages[l.status_id]?.name||''));
+  const overdueTasks = bTasks.filter(t => t.complete_till && t.complete_till < now);
+  const conv         = newL.length > 0 ? Math.round(qualLeads.length / newL.length * 100) : 0;
+
+  document.getElementById('dd-name').textContent = name;
+  document.getElementById('dd-sub').textContent  = `${activeLeads.length} активных · ${newL.length} новых за период`;
+
+  // KPI карточки
+  document.getElementById('dd-kpi').innerHTML = `
+    <div class="kpi-card"><div class="kpi-label">В работе</div><div class="kpi-value">${activeLeads.length}</div><div class="kpi-sub">активные лиды</div></div>
+    <div class="kpi-card"><div class="kpi-label">Новых</div><div class="kpi-value green">${newL.length}</div><div class="kpi-sub">за период</div></div>
+    <div class="kpi-card"><div class="kpi-label">Просрочено</div><div class="kpi-value red">${overdueTasks.length}</div><div class="kpi-sub">задач</div></div>
+    <div class="kpi-card"><div class="kpi-label">Конверсия</div><div class="kpi-value">${conv}%</div><div class="kpi-sub">новые → квалиф.</div></div>`;
+
+  // Тело дашборда
+  const stageCounts = {};
+  activeLeads.forEach(l => {
+    const s = stages[l.status_id]?.name||'—';
+    stageCounts[s] = (stageCounts[s]||0) + 1;
+  });
+  const maxSC = Math.max(...Object.values(stageCounts), 1);
+  const stageRows = Object.entries(stageCounts).sort((a,b)=>b[1]-a[1]).map(([s,c]) =>
+    `<div class="stage-bar-row">
+      <div class="stage-bar-name">${s}</div>
+      <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${Math.round(c/maxSC*100)}%"></div></div>
+      <div class="stage-bar-count">${c}</div>
+    </div>`).join('');
+
+  // Архивные этапы
+  const sryvOtkaz = newL.filter(l => stageIs(stages[l.status_id]?.name||'','срыв','отказ')).length;
+  const second    = newL.filter(l => stageIs(stages[l.status_id]?.name||'','второе касание')).length;
+  const delayed   = newL.filter(l => stageIs(stages[l.status_id]?.name||'','отложено')).length;
+  const cs = c => newL.length ? Math.round(c/newL.length*100)+'%' : '—';
+
+  // Лиды — последние 50
+  const leadsHtml = newL.sort((a,b)=>b.created_at-a.created_at).slice(0,50).map(l => {
+    const d    = new Date(l.created_at*1000);
+    const ds   = d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const tags = l._embedded?.tags?.map(t=>t.name).join(', ')||'—';
+    const sn   = stages[l.status_id]?.name||'—';
+    const sc   = isQual(sn)?'badge-ok':isArchive(sn)?'badge-danger':'badge-muted';
+    return `<tr>
+      <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2)">${ds}</td>
+      <td style="font-size:11px;color:var(--muted2)">${tags}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:10px"><a href="https://laresgroup.amocrm.ru/leads/detail/${l.id}" target="_blank" style="color:var(--text);text-decoration:underline">${l.id}</a></td>
+      <td style="font-size:11px">${l.name||'—'}</td>
+      <td><span class="badge ${sc}" style="font-size:9px">${sn}</span></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="empty">Нет лидов за период</td></tr>';
+
+  document.getElementById('dd-body').innerHTML = `
+    <div class="section-title" style="margin-bottom:12px">Распределение по этапам</div>
+    <div style="margin-bottom:24px">${stageRows || '<div class="empty">Нет активных лидов</div>'}</div>
+
+    <div class="section-title" style="margin-bottom:12px">Архивные этапы</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);margin-bottom:24px;">
+      <div style="padding:16px;border-right:1px solid var(--border)">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Срыв + Отказ</div>
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700">${sryvOtkaz}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px">${cs(sryvOtkaz)} от новых</div>
+      </div>
+      <div style="padding:16px;border-right:1px solid var(--border)">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Второе касание</div>
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700">${second}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px">${cs(second)} от новых</div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Отложено</div>
+        <div style="font-family:'Space Mono',monospace;font-size:32px;font-weight:700">${delayed}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px">${cs(delayed)} от новых</div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:12px">Новые лиды за период</div>
+    <div class="table-wrap" style="margin-bottom:0">
+      <table style="min-width:500px">
+        <thead><tr>
+          <th>Дата</th><th>Тег</th><th>ID</th><th>Название</th><th>Этап</th>
+        </tr></thead>
+        <tbody>${leadsHtml}</tbody>
+      </table>
+    </div>`;
+
+  document.getElementById('dd-overlay').classList.add('open');
+  document.getElementById('dd-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrilldown() {
+  document.getElementById('dd-overlay').classList.remove('open');
+  document.getElementById('dd-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
 
 loadConfig();
 </script>
