@@ -4,121 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LARESGROUP · Аналитика</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0c0c0e; --surface: #141416; --surface2: #1c1c1f; --border: #2a2a2e;
-    --accent: #e8c84a; --accent2: #e87d3e; --red: #e85555; --green: #4ac98a;
-    --text: #f0ede8; --muted: #6b6b70; --muted2: #9b9ba0;
+    --bg: #ffffff; --surface: #f5f5f5; --surface2: #ebebeb;
+    --border: #d0d0d0; --border-strong: #000000;
+    --text: #000000; --muted: #666666; --muted2: #999999;
+    --red: #cc0000; --green: #007700; --orange: #884400;
   }
-  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-weight: 300; min-height: 100vh; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
-  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--accent); }
-  .logo span { color: var(--muted2); font-size: 14px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px; margin-left: 16px; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .period-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted2); }
-  .btn-refresh { background: var(--accent); color: #000; border: none; border-radius: 4px; padding: 8px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; cursor: pointer; letter-spacing: 1px; transition: opacity 0.2s; }
-  .btn-refresh:hover { opacity: 0.85; } .btn-refresh:disabled { opacity: 0.4; cursor: wait; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
-  .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-weight: 400; min-height: 100vh; }
+
+  header { display: flex; align-items: stretch; justify-content: space-between; border-bottom: 2px solid var(--border-strong); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .logo-block { padding: 16px 28px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+  .logo { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; line-height: 1; }
+  .logo-sub { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-top: 3px; }
+  .header-center { flex: 1; display: flex; align-items: center; padding: 0 20px; gap: 5px; }
+  .group-btn { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 16px; cursor: pointer; transition: all 0.12s; }
+  .group-btn:hover { border-color: var(--text); color: var(--text); }
+  .group-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .header-right { display: flex; align-items: stretch; border-left: 1px solid var(--border); }
+  .period-badge { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); padding: 0 18px; display: flex; align-items: center; border-right: 1px solid var(--border); }
+  .status-wrap { display: flex; align-items: center; padding: 0 14px; border-right: 1px solid var(--border); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted2); }
+  .status-dot.ok { background: var(--green); }
   .status-dot.err { background: var(--red); }
-  .status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .status-dot.loading { background: var(--text); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .btn-refresh { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: var(--text); color: var(--bg); border: none; padding: 0 26px; cursor: pointer; transition: opacity 0.15s; }
+  .btn-refresh:hover { opacity: 0.75; }
+  .btn-refresh:disabled { opacity: 0.3; cursor: wait; }
 
-  .config-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 32px; }
-  .config-panel h3 { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 14px; }
-  .config-grid { display: grid; grid-template-columns: 1fr 1fr 160px 160px 160px 160px auto; gap: 10px; align-items: end; }
-  .field label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
-  .field input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 12px; outline: none; transition: border-color 0.2s; }
-  .field input:focus { border-color: var(--accent); }
-  .field input[type="date"] { color-scheme: dark; }
-  .btn-save { background: var(--surface2); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 8px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; height: 36px; white-space: nowrap; }
-  .btn-save:hover { background: var(--accent); color: #000; }
+  .config-panel { border-bottom: 1px solid var(--border); padding: 18px 28px; background: var(--surface); }
+  .config-panel h3 { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr 148px 148px 148px 148px auto; gap: 10px; align-items: end; }
+  .field label { display: block; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
+  .field input { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: 8px 12px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px; outline: none; transition: border-color 0.15s; }
+  .field input:focus { border-color: var(--text); }
+  .field input[type="date"] { color-scheme: light; }
+  .btn-save { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: var(--text); color: var(--bg); border: none; padding: 9px 18px; cursor: pointer; white-space: nowrap; height: 36px; }
+  .btn-save:hover { opacity: 0.75; }
 
-  main { padding: 32px; }
-  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
-  .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px; position: relative; overflow: hidden; }
-  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
-  .kpi-card.red::before { background: var(--red); } .kpi-card.green::before { background: var(--green); } .kpi-card.orange::before { background: var(--accent2); }
-  .kpi-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
-  .kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; color: var(--text); }
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--border); }
+  .kpi-card { padding: 26px 22px; border-right: 1px solid var(--border); }
+  .kpi-card:last-child { border-right: none; }
+  .kpi-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .kpi-value { font-family: 'Space Mono', monospace; font-size: 48px; font-weight: 700; line-height: 1; color: var(--text); letter-spacing: -0.03em; }
+  .kpi-value.red { color: var(--red); }
+  .kpi-value.green { color: var(--green); }
   .kpi-sub { font-size: 11px; color: var(--muted2); margin-top: 6px; }
 
-  .section-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .section-wrap { padding: 28px 28px 0; }
+  .section-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
   .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .section-subtitle { font-size: 12px; color: var(--muted2); margin-bottom: 16px; margin-top: -8px; font-family: 'IBM Plex Mono', monospace; }
+  .section-subtitle { font-size: 11px; color: var(--muted2); margin-bottom: 14px; margin-top: 5px; font-family: 'Space Mono', monospace; }
 
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 32px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 900px; }
-  thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
-  th { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; padding: 12px 14px; text-align: left; font-weight: 400; white-space: nowrap; }
+  .table-wrap { border: 1px solid var(--border); overflow: hidden; margin-bottom: 28px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 860px; }
+  thead tr { background: var(--surface); border-bottom: 2px solid var(--border-strong); }
+  th { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; padding: 10px 14px; text-align: left; font-weight: 400; white-space: nowrap; }
   th.num { text-align: right; }
-  th.section-header { background: var(--bg); color: var(--accent); font-size: 9px; letter-spacing: 2px; padding: 8px 14px; border-top: 1px solid var(--border); }
-  td { padding: 13px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: rgba(255,255,255,0.02); }
-  td.num { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
-  .broker-name { font-weight: 500; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-  .badge-warn { background: rgba(232,125,62,0.15); color: var(--accent2); }
-  .badge-danger { background: rgba(232,85,85,0.15); color: var(--red); }
-  .badge-ok { background: rgba(74,201,138,0.15); color: var(--green); }
-  .badge-muted { background: rgba(107,107,112,0.15); color: var(--muted2); }
+  tbody tr:hover { background: var(--surface); }
+  td.num { text-align: right; font-family: 'Space Mono', monospace; font-size: 13px; }
+  .broker-name { font-weight: 600; font-size: 13px; }
+
+  .badge { display: inline-block; padding: 2px 8px; font-family: 'Space Mono', monospace; font-size: 11px; border: 1px solid var(--border); }
+  .badge-warn { border-color: var(--orange); color: var(--orange); }
+  .badge-danger { border-color: var(--red); color: var(--red); }
+  .badge-ok { border-color: var(--green); color: var(--green); }
+  .badge-muted { border-color: var(--border); color: var(--muted2); }
 
   .conv-bar { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-  .conv-track { width: 50px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .conv-fill { height: 100%; background: var(--green); border-radius: 2px; }
+  .conv-track { width: 44px; height: 2px; background: var(--border); overflow: hidden; }
+  .conv-fill { height: 100%; background: var(--text); }
 
-  .tag-pills { display: flex; flex-wrap: wrap; gap: 4px; }
-  .tag-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 2px 7px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted2); white-space: nowrap; }
-  .tag-pill .tag-count { color: var(--accent); margin-left: 4px; font-weight: 500; }
+  .tag-pills { display: flex; flex-wrap: wrap; gap: 3px; }
+  .tag-pill { background: var(--surface2); border: 1px solid var(--border); padding: 2px 6px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted2); white-space: nowrap; }
+  .tag-pill .tag-count { color: var(--text); margin-left: 3px; font-weight: 700; }
 
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
-  .funnel-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+  .funnel-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); }
   .funnel-row:last-child { border-bottom: none; }
-  .funnel-stage { font-size: 12px; color: var(--muted2); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .funnel-count { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--text); min-width: 36px; text-align: right; }
-  .funnel-bar-wrap { width: 80px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .funnel-bar { height: 100%; background: var(--accent); border-radius: 2px; }
+  .funnel-stage { font-size: 11px; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Space Mono', monospace; }
+  .funnel-count { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--text); min-width: 32px; text-align: right; }
+  .funnel-bar-wrap { width: 70px; height: 2px; background: var(--border); overflow: hidden; }
+  .funnel-bar { height: 100%; background: var(--text); }
 
-  .leads-filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted2); border-radius: 4px; padding: 5px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s; }
-  .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  /* ARCHIVE BLOCK */
+  .archive-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--border); margin-bottom: 28px; }
+  .archive-card { padding: 22px; border-right: 1px solid var(--border); }
+  .archive-card:last-child { border-right: none; }
+  .archive-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.16em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+  .archive-total { font-family: 'Space Mono', monospace; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px; }
+  .archive-conv { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .archive-table { width: 100%; border-collapse: collapse; }
+  .archive-table tr { border-bottom: 1px solid var(--border); }
+  .archive-table tr:last-child { border-bottom: none; }
+  .archive-table td { padding: 7px 0; font-size: 12px; color: var(--muted); }
+  .archive-table td:last-child { text-align: right; font-family: 'Space Mono', monospace; font-weight: 700; color: var(--text); }
 
-  .divider-row td { background: var(--bg); padding: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .leads-filter { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 5px 11px; font-family: 'Space Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.12s; text-transform: uppercase; letter-spacing: 0.05em; }
+  .filter-btn.active, .filter-btn:hover { border-color: var(--text); color: var(--text); background: var(--surface); }
 
-  .error-msg { background: rgba(232,85,85,0.1); border: 1px solid rgba(232,85,85,0.3); border-radius: 6px; padding: 20px 24px; color: var(--red); font-family: 'IBM Plex Mono', monospace; font-size: 13px; margin-bottom: 24px; display: none; }
-  .info-msg { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 16px 24px; color: var(--muted2); font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-bottom: 24px; display: none; }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text); z-index: 999; transform: translateY(60px); opacity: 0; transition: all 0.3s; }
+  .error-msg { background: rgba(204,0,0,0.05); border: 1px solid rgba(204,0,0,0.3); padding: 14px 22px; color: var(--red); font-family: 'Space Mono', monospace; font-size: 12px; margin: 20px 28px; display: none; }
+  .info-msg { background: var(--surface); border: 1px solid var(--border); padding: 12px 22px; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 11px; margin: 14px 28px; display: none; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); padding: 11px 18px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--bg); z-index: 999; transform: translateY(60px); opacity: 0; transition: all 0.25s; letter-spacing: 0.05em; }
   .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-color: var(--green); color: var(--green); }
-  .toast.error { border-color: var(--red); color: var(--red); }
-  .group-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted2); border-radius: 4px; padding: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s; letter-spacing: 1px; text-transform: uppercase; }
-  .group-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .group-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
-  .empty { text-align: center; padding: 40px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .toast.error { background: var(--red); }
+  .empty { text-align: center; padding: 36px; color: var(--muted2); font-family: 'Space Mono', monospace; font-size: 11px; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">LARESGROUP <span id="group-label">· ВСЕ ОТДЕЛЫ</span></div>
+  <div class="logo-block">
+    <div class="logo">LARESGROUP</div>
+    <div class="logo-sub" id="group-label">ВСЕ ОТДЕЛЫ</div>
+  </div>
+  <div class="header-center">
+    <button class="group-btn active" onclick="switchGroup('all',this)">ВСЕ</button>
+    <button class="group-btn" onclick="switchGroup('andrey',this)">АНДРЕЙ</button>
+    <button class="group-btn" onclick="switchGroup('aren',this)">АРЕН</button>
+    <button class="group-btn" onclick="switchGroup('kirill',this)">КИРИЛЛ</button>
+  </div>
   <div class="header-right">
-    <div style="display:flex;gap:6px;">
-      <button class="group-btn active" data-group="all" onclick="switchGroup('all',this)">Все</button>
-      <button class="group-btn" data-group="andrey" onclick="switchGroup('andrey',this)">Андрей</button>
-      <button class="group-btn" data-group="arena" onclick="switchGroup('arena',this)">Арена</button>
-      <button class="group-btn" data-group="kirill" onclick="switchGroup('kirill',this)">Кирилл</button>
-    </div>
-    <div class="status-dot" id="status-dot"></div>
     <div class="period-badge" id="period-label">—</div>
+    <div class="status-wrap"><div class="status-dot" id="status-dot"></div></div>
     <button class="btn-refresh" id="btn-refresh" onclick="loadAll()">↻ ОБНОВИТЬ</button>
   </div>
 </header>
 
 <div class="config-panel">
-  <h3>Настройки подключения</h3>
+  <h3>Подключение</h3>
   <div class="config-grid">
     <div class="field"><label>Access Token</label><input type="password" id="inp-token" placeholder="eyJ0eXAi..." /></div>
     <div class="field"><label>Refresh Token</label><input type="password" id="inp-refresh" placeholder="def50200..." /></div>
@@ -130,85 +150,68 @@
   </div>
 </div>
 
-<main>
-  <div class="error-msg" id="error-banner"></div>
-  <div class="info-msg" id="info-banner"></div>
+<div class="error-msg" id="error-banner"></div>
+<div class="info-msg" id="info-banner"></div>
 
-  <!-- KPI -->
+<main>
   <div class="kpi-row">
     <div class="kpi-card"><div class="kpi-label">В активной воронке</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">все сделки сейчас</div></div>
-    <div class="kpi-card green"><div class="kpi-label">Новых за период</div><div class="kpi-value" id="kpi-new">—</div><div class="kpi-sub">Новостройки 2.0</div></div>
-    <div class="kpi-card orange"><div class="kpi-label">Квалифицировано</div><div class="kpi-value" id="kpi-qual">—</div><div class="kpi-sub">этап 3+ в воронке</div></div>
-    <div class="kpi-card red"><div class="kpi-label">Просроч. задачи</div><div class="kpi-value" id="kpi-overdue">—</div><div class="kpi-sub">требуют внимания</div></div>
+    <div class="kpi-card"><div class="kpi-label">Новых за период</div><div class="kpi-value green" id="kpi-new">—</div><div class="kpi-sub">отдел продаж</div></div>
+    <div class="kpi-card"><div class="kpi-label">Квалифицировано</div><div class="kpi-value" id="kpi-qual">—</div><div class="kpi-sub">квалиф. и выше</div></div>
+    <div class="kpi-card"><div class="kpi-label">Просроч. задачи</div><div class="kpi-value red" id="kpi-overdue">—</div><div class="kpi-sub">требуют внимания</div></div>
     <div class="kpi-card"><div class="kpi-label">Конверсия в работу</div><div class="kpi-value" id="kpi-conv">—</div><div class="kpi-sub">новые → квалиф.</div></div>
   </div>
 
-  <!-- АКТИВНАЯ ВОРОНКА -->
-  <div class="section-title">Активная воронка — текущее состояние</div>
-  <div class="section-subtitle">Все лиды сейчас в работе у каждого брокера</div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Брокер</th>
-          <th class="num">Всего</th>
-          <th class="num">Квалиф.</th>
-          <th class="num">Встречи</th>
-          <th class="num">Показы</th>
-          <th class="num">Бронь</th>
-          <th class="num">ДДУ</th>
-          <th class="num">Без задач</th>
-          <th class="num">Просроч.</th>
-          <th class="num">Конверсия</th>
-        </tr>
-      </thead>
-      <tbody id="funnel-tbody"><tr><td colspan="10" class="empty">Введите токены и нажмите «Загрузить»</td></tr></tbody>
-    </table>
-  </div>
-
-  <!-- НОВЫЕ ЛИДЫ ЗА ПЕРИОД -->
-  <div class="section-title">Новые лиды — Новостройки 2.0 за период</div>
-  <div class="section-subtitle">Разбивка по брокерам и тегам: кто и как отработал новые заявки</div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Брокер</th>
-          <th class="num">Всего новых</th>
-          <th>Источники (тег → кол-во)</th>
-          <th class="num">До квалиф.</th>
-          <th class="num">В работе</th>
-          <th class="num">Архив</th>
-          <th class="num">Конверсия</th>
-        </tr>
-      </thead>
-      <tbody id="new-leads-tbody"><tr><td colspan="7" class="empty">Нет данных</td></tr></tbody>
-    </table>
-  </div>
-
-  <!-- ДЕТАЛЬНЫЙ СПИСОК НОВЫХ ЛИДОВ -->
-  <div class="section-title">Детальный список новых лидов</div>
-  <div class="leads-filter" id="broker-filter"></div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Дата</th><th>Брокер</th><th>Тег / источник</th><th>ID</th><th>Название</th><th>Этап сейчас</th>
-        </tr>
-      </thead>
-      <tbody id="leads-tbody"><tr><td colspan="6" class="empty">Нет данных</td></tr></tbody>
-    </table>
-  </div>
-
-  <!-- ВОРОНКА + ИСТОЧНИКИ -->
-  <div class="two-col">
-    <div>
-      <div class="section-title">Воронка (все брокеры)</div>
-      <div class="table-wrap" id="funnel-wrap"><div class="empty">Нет данных</div></div>
+  <div class="section-wrap">
+    <div class="section-title">Активная воронка — текущее состояние</div>
+    <div class="section-subtitle">Все лиды сейчас в работе у каждого брокера</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Брокер</th><th class="num">Всего</th><th class="num">Квалиф.</th>
+          <th class="num">Встречи</th><th class="num">Показы</th><th class="num">Бронь</th>
+          <th class="num">Сделка</th><th class="num">Без задач</th><th class="num">Просроч.</th><th class="num">Конверсия</th>
+        </tr></thead>
+        <tbody id="funnel-tbody"><tr><td colspan="10" class="empty">Введите токены и нажмите «Загрузить»</td></tr></tbody>
+      </table>
     </div>
-    <div>
-      <div class="section-title">Источники новых лидов</div>
-      <div class="table-wrap" id="sources-wrap"><div class="empty">Нет данных</div></div>
+
+    <div class="section-title">Новые лиды — Отдел продаж за период</div>
+    <div class="section-subtitle">Разбивка по брокерам и тегам</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Брокер</th><th class="num">Всего новых</th><th>Источники</th>
+          <th class="num">До квалиф.</th><th class="num">В работе</th><th class="num">Архив</th><th class="num">Конверсия</th>
+        </tr></thead>
+        <tbody id="new-leads-tbody"><tr><td colspan="7" class="empty">Нет данных</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Архивные этапы — конверсия потерь</div>
+    <div class="section-subtitle">Срыв + Отказ не в работе · Второе касание · Отложено</div>
+    <div class="archive-grid" id="archive-grid">
+      <div class="archive-card"><div class="archive-label">—</div><div class="archive-total">—</div></div>
+    </div>
+
+    <div class="section-title">Детальный список новых лидов</div>
+    <div class="leads-filter" id="broker-filter"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Дата</th><th>Брокер</th><th>Тег</th><th>ID</th><th>Название</th><th>Этап</th></tr></thead>
+        <tbody id="leads-tbody"><tr><td colspan="6" class="empty">Нет данных</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="section-title">Воронка (все брокеры)</div>
+        <div class="table-wrap" id="funnel-wrap"><div class="empty">Нет данных</div></div>
+      </div>
+      <div>
+        <div class="section-title">Источники новых лидов</div>
+        <div class="table-wrap" id="sources-wrap"><div class="empty">Нет данных</div></div>
+      </div>
     </div>
   </div>
 </main>
@@ -216,37 +219,55 @@
 <div class="toast" id="toast"></div>
 
 <script>
-let cfg = {};
-let allLeads = [], newLeads = [];
-let _lastUsers = {}, _lastStages = {};
-let currentBrokerFilter = 'all';
-let currentGroup = 'all';
-const NOVOSTROI_PIPELINE = 'Новостройки 2.0';
+let cfg = {}, allLeads = [], newLeads = [], _lastUsers = {}, _lastStages = {};
+let currentBrokerFilter = 'all', currentGroup = 'all';
+
+// Группы по фамилии
+const GROUPS = {
+  andrey: { label:'ОТДЕЛ АНДРЕЯ', names:['Калашников','Берегий','Печерикина','Сухова','Альхатиб','Чубарова','Земкина','Вахрамеева','Корниенко','Ягофарова'] },
+  aren:   { label:'ОТДЕЛ АРЕН',   names:['Кимбер','Стыцюк','Ваврина','Римская','Рогов','Колганов','Большакова','Лупанова','Валиева'] },
+  kirill: { label:'ОТДЕЛ КИРИЛЛА',names:['Терешин','Карзинина','Ходякова','Большакова','Марченкова','Эрднеев','Разгоняева'] }
+};
+
+function userInGroup(userName, groupKey) {
+  if (groupKey === 'all') return true;
+  const n = (userName||'').toLowerCase();
+  return GROUPS[groupKey].names.some(f => n.includes(f.toLowerCase()));
+}
 
 function switchGroup(group, btn) {
   currentGroup = group;
   document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  document.getElementById('group-label').textContent = group === 'all' ? 'ВСЕ ОТДЕЛЫ' : GROUPS[group].label;
   if (cfg.token) loadAll();
 }
 
+// Матчинг этапов по ключевым словам
+function stageIs(name, ...keys) {
+  const n = (name||'').toLowerCase();
+  return keys.some(k => n.includes(k.toLowerCase()));
+}
+function isActive(n)  { return stageIs(n,'дозвон','квалификац','встреча','показ','бронь','сделка'); }
+function isQual(n)    { return stageIs(n,'квалификац','встреча','показ','бронь','сделка'); }
+function isArchive(n) { return stageIs(n,'срыв','отказ','второе касание','отложено'); }
+
 function loadConfig() {
-  const saved = localStorage.getItem('amo_cfg_v2');
-  if (saved) {
-    cfg = JSON.parse(saved);
-    if (cfg.token) document.getElementById('inp-token').value = cfg.token;
-    if (cfg.refresh) document.getElementById('inp-refresh').value = cfg.refresh;
-    if (cfg.clientId) document.getElementById('inp-client-id').value = cfg.clientId;
+  const s = localStorage.getItem('amo_lares_v1');
+  if (s) {
+    cfg = JSON.parse(s);
+    if (cfg.token)        document.getElementById('inp-token').value = cfg.token;
+    if (cfg.refresh)      document.getElementById('inp-refresh').value = cfg.refresh;
+    if (cfg.clientId)     document.getElementById('inp-client-id').value = cfg.clientId;
     if (cfg.clientSecret) document.getElementById('inp-client-secret').value = cfg.clientSecret;
   }
-  const now = new Date();
-  const day = now.getDay() || 7;
-  const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
-  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const now = new Date(), day = now.getDay()||7;
+  const mon = new Date(now); mon.setDate(now.getDate()-day+1);
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
   const fmt = d => d.toISOString().split('T')[0];
   document.getElementById('inp-date-from').value = cfg.dateFrom || fmt(mon);
-  document.getElementById('inp-date-to').value = cfg.dateTo || fmt(sun);
-  if (cfg.token) showInfo('Токен загружен. Нажмите «Загрузить» для обновления данных.');
+  document.getElementById('inp-date-to').value   = cfg.dateTo   || fmt(sun);
+  if (cfg.token) showInfo('Токен загружен. Нажмите «Загрузить».');
 }
 
 function saveConfig() {
@@ -258,41 +279,23 @@ function saveConfig() {
     dateFrom: document.getElementById('inp-date-from').value,
     dateTo: document.getElementById('inp-date-to').value,
   };
-  localStorage.setItem('amo_cfg_v2', JSON.stringify(cfg));
+  localStorage.setItem('amo_lares_v1', JSON.stringify(cfg));
   loadAll();
 }
 
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 3500);
-}
-function showError(msg) {
-  document.getElementById('error-banner').style.display = 'block';
-  document.getElementById('error-banner').textContent = '⚠ ' + msg;
-  document.getElementById('info-banner').style.display = 'none';
-}
-function showInfo(msg) {
-  document.getElementById('info-banner').style.display = 'block';
-  document.getElementById('info-banner').textContent = msg;
-  document.getElementById('error-banner').style.display = 'none';
-}
-function hideMessages() {
-  document.getElementById('error-banner').style.display = 'none';
-  document.getElementById('info-banner').style.display = 'none';
-}
-function setStatus(s) { document.getElementById('status-dot').className = 'status-dot ' + s; }
+function showToast(msg,t=''){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+t;setTimeout(()=>el.className='toast',3000);}
+function showError(msg){document.getElementById('error-banner').style.display='block';document.getElementById('error-banner').textContent='⚠ '+msg;document.getElementById('info-banner').style.display='none';}
+function showInfo(msg){document.getElementById('info-banner').style.display='block';document.getElementById('info-banner').textContent=msg;document.getElementById('error-banner').style.display='none';}
+function hideMessages(){document.getElementById('error-banner').style.display='none';document.getElementById('info-banner').style.display='none';}
+function setStatus(s){document.getElementById('status-dot').className='status-dot '+s;}
 
 async function amoGet(path, params={}) {
-  const url = new URL('/api/proxy/' + path, window.location.origin);
-  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString(), { headers: { 'X-Token': cfg.token } });
-  if (res.status === 401) {
-    if (cfg.refresh && cfg.clientId && cfg.clientSecret) {
-      const ok = await tryRefresh();
-      if (ok) return amoGet(path, params);
-    }
-    throw new Error('Токен истёк. Введите новый access token.');
+  const url = new URL('/api/proxy/'+path, window.location.origin);
+  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+  const res = await fetch(url.toString(), {headers:{'X-Token':cfg.token}});
+  if (res.status===401) {
+    if (cfg.refresh&&cfg.clientId&&cfg.clientSecret) { const ok=await tryRefresh(); if(ok) return amoGet(path,params); }
+    throw new Error('Токен истёк.');
   }
   if (!res.ok) throw new Error(`AMO API ошибка ${res.status}`);
   return res.json();
@@ -300,290 +303,233 @@ async function amoGet(path, params={}) {
 
 async function tryRefresh() {
   try {
-    const res = await fetch('/api/refresh', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: cfg.clientId, client_secret: cfg.clientSecret, refresh_token: cfg.refresh })
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    if (data.access_token) {
-      cfg.token = data.access_token; cfg.refresh = data.refresh_token;
-      localStorage.setItem('amo_cfg_v2', JSON.stringify(cfg));
-      document.getElementById('inp-token').value = cfg.token;
-      document.getElementById('inp-refresh').value = cfg.refresh;
-      showToast('Токен обновлён автоматически', 'success');
-      return true;
-    }
+    const res = await fetch('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:cfg.clientId,client_secret:cfg.clientSecret,refresh_token:cfg.refresh})});
+    if(!res.ok) return false;
+    const d = await res.json();
+    if(d.access_token){cfg.token=d.access_token;cfg.refresh=d.refresh_token;localStorage.setItem('amo_lares_v1',JSON.stringify(cfg));document.getElementById('inp-token').value=cfg.token;document.getElementById('inp-refresh').value=cfg.refresh;showToast('Токен обновлён');return true;}
     return false;
-  } catch { return false; }
+  } catch{return false;}
 }
 
 async function fetchAll(path, params={}) {
-  let page = 1, results = [];
-  while (true) {
-    const data = await amoGet(path, { ...params, limit: 250, page });
-    const items = data?._embedded?.leads || data?._embedded?.users || data?._embedded?.tasks || data?._embedded?.pipelines || [];
-    if (!items.length) break;
-    results = results.concat(items);
-    if (items.length < 250) break;
+  let page=1, results=[];
+  while(true) {
+    const data = await amoGet(path, {...params, limit:250, page});
+    const items = data?._embedded?.leads||data?._embedded?.users||data?._embedded?.tasks||data?._embedded?.pipelines||[];
+    if(!items.length) break;
+    results=results.concat(items);
+    if(items.length<250) break;
     page++;
   }
   return results;
 }
 
-function toTs(dateStr) { return Math.floor(new Date(dateStr).getTime() / 1000); }
+function toTs(d){return Math.floor(new Date(d).getTime()/1000);}
 
 async function loadAll() {
-  if (!cfg.token) { showError('Введите Access Token и нажмите «Загрузить»'); return; }
-  hideMessages();
-  setStatus('loading');
-  const btn = document.getElementById('btn-refresh');
-  btn.disabled = true; btn.textContent = '↻ ЗАГРУЗКА...';
-
+  if(!cfg.token){showError('Введите Access Token и нажмите «Загрузить»');return;}
+  hideMessages(); setStatus('loading');
+  const btn=document.getElementById('btn-refresh');
+  btn.disabled=true; btn.textContent='↻ ЗАГРУЗКА...';
   try {
-    // Пользователи выбранного отдела
-    const groupRes = await fetch('/api/group_users?group=' + currentGroup, { headers: { 'X-Token': cfg.token } });
-    const groupData = await groupRes.json();
-    const filteredUserIds = new Set((groupData.users || []).map(u => u.id));
-    document.getElementById('group-label').textContent = '· ' + (groupData.group_name || '').toUpperCase();
-
     const usersRaw = await fetchAll('users');
     const users = {};
-    usersRaw.forEach(u => users[u.id] = u.name);
+    usersRaw.forEach(u=>users[u.id]=u.name);
+    const filteredUserIds = new Set(usersRaw.filter(u=>userInGroup(u.name,currentGroup)).map(u=>u.id));
 
-    // Воронки и этапы
     const pipelinesRaw = await fetchAll('leads/pipelines');
-    const stages = {}, pipelineNames = {};
-    pipelinesRaw.forEach(p => {
-      pipelineNames[p.id] = p.name;
-      (p._embedded?.statuses || []).forEach(s => stages[s.id] = { name: s.name, pipeline: p.name, pipelineId: p.id });
-    });
+    const stages = {};
+    pipelinesRaw.forEach(p=>(p._embedded?.statuses||[]).forEach(s=>stages[s.id]={name:s.name,pipeline:p.name,pipelineId:p.id}));
 
-    // Найдём ID воронки Новостройки 2.0
-    const novostroi = pipelinesRaw.find(p => p.name && p.name.includes('Новостройки 2.0'));
-    const novostroiId = novostroi ? novostroi.id : null;
+    // Ищем "отдел продаж"
+    const pipeline = pipelinesRaw.find(p=>p.name&&p.name.toLowerCase().includes('отдел продаж'));
+    const pipelineId = pipeline?pipeline.id:null;
 
-    // Все активные лиды (фильтруем по клубу)
-    allLeads = (await fetchAll('leads', { 'with': 'tags' }))
-      .filter(l => filteredUserIds.has(l.responsible_user_id) && (!novostroiId || l.pipeline_id === novostroiId));
+    allLeads = (await fetchAll('leads',{'with':'tags'}))
+      .filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!pipelineId||l.pipeline_id===pipelineId));
 
-    // Новые лиды за период в воронке Новостройки 2.0
-    const dateFrom = toTs(cfg.dateFrom || document.getElementById('inp-date-from').value);
-    const dateTo = toTs(cfg.dateTo || document.getElementById('inp-date-to').value) + 86399;
+    const dateFrom=toTs(cfg.dateFrom||document.getElementById('inp-date-from').value);
+    const dateTo=toTs(cfg.dateTo||document.getElementById('inp-date-to').value)+86399;
+    const newLeadsAll = await fetchAll('leads',{'filter[created_at][from]':dateFrom,'filter[created_at][to]':dateTo,'with':'tags'});
+    newLeads = newLeadsAll.filter(l=>filteredUserIds.has(l.responsible_user_id)&&(!pipelineId||l.pipeline_id===pipelineId));
 
-    let newLeadsAll = await fetchAll('leads', {
-      'filter[created_at][from]': dateFrom,
-      'filter[created_at][to]': dateTo,
-      'with': 'tags'
-    });
+    const allLeadIds = new Set(allLeads.map(l=>l.id));
+    const tasksRaw = await fetchAll('tasks',{'filter[is_completed]':0});
+    const tasks = tasksRaw.filter(t=>t.entity_type==='leads'&&allLeadIds.has(t.entity_id));
 
-    // Фильтр: только клуб + только Новостройки 2.0
-    newLeads = newLeadsAll.filter(l =>
-      filteredUserIds.has(l.responsible_user_id) &&
-      (!novostroiId || l.pipeline_id === novostroiId)
-    );
-
-    // Задачи — только по лидам из нашей воронки
-    const allLeadIds = new Set(allLeads.map(l => l.id));
-    const tasksRaw = await fetchAll('tasks', { 'filter[is_completed]': 0 });
-    const tasks = tasksRaw.filter(t => t.entity_type === 'leads' && allLeadIds.has(t.entity_id));
-
-    _lastUsers = users; _lastStages = stages;
-    renderDashboard(allLeads, newLeads, tasks, users, stages);
-    setStatus('ok');
-    showToast('Данные обновлены', 'success');
-
-    const from = cfg.dateFrom || document.getElementById('inp-date-from').value;
-    const to = cfg.dateTo || document.getElementById('inp-date-to').value;
-    document.getElementById('period-label').textContent = `${from} — ${to}`;
-  } catch(e) {
-    setStatus('err');
-    showError(e.message);
-    showToast(e.message, 'error');
-    console.error(e);
-  } finally {
-    btn.disabled = false; btn.textContent = '↻ ОБНОВИТЬ';
-  }
+    _lastUsers=users; _lastStages=stages;
+    renderDashboard(allLeads,newLeads,tasks,users,stages);
+    setStatus('ok'); showToast('Данные обновлены');
+    const from=cfg.dateFrom||document.getElementById('inp-date-from').value;
+    const to=cfg.dateTo||document.getElementById('inp-date-to').value;
+    document.getElementById('period-label').textContent=`${from} — ${to}`;
+  } catch(e){setStatus('err');showError(e.message);showToast(e.message,'error');console.error(e);}
+  finally{btn.disabled=false;btn.textContent='↻ ОБНОВИТЬ';}
 }
 
-function renderDashboard(leads, newL, tasks, users, stages) {
-  const now = Math.floor(Date.now()/1000);
-  const overdueTasks = tasks.filter(t => t.complete_till && t.complete_till < now);
-  const overdueByUser = {};
-  overdueTasks.forEach(t => overdueByUser[t.responsible_user_id] = (overdueByUser[t.responsible_user_id]||0)+1);
-  const leadsWithTasks = new Set(tasks.map(t => t.entity_id));
+function renderDashboard(leads,newL,tasks,users,stages) {
+  const now=Math.floor(Date.now()/1000);
+  const overdueTasks=tasks.filter(t=>t.complete_till&&t.complete_till<now);
+  const overdueByUser={};
+  overdueTasks.forEach(t=>overdueByUser[t.responsible_user_id]=(overdueByUser[t.responsible_user_id]||0)+1);
+  const leadsWithTasks=new Set(tasks.map(t=>t.entity_id));
 
-  // Сгруппировать по брокеру
-  const brokerMap = {};
-  leads.forEach(l => {
-    const uid = l.responsible_user_id;
-    const name = users[uid] || `ID:${uid}`;
-    const stageInfo = stages[l.status_id] || { name: '—', pipeline: '—' };
-    if (!brokerMap[uid]) brokerMap[uid] = { name, uid, leads: [], stageCounts: {}, newLeads: [] };
-    // Активная воронка = только этапы 3-9
-    if (stageInfo.name.match(/^[3-9]\./)) {
-      brokerMap[uid].leads.push(l);
-      brokerMap[uid].stageCounts[stageInfo.name] = (brokerMap[uid].stageCounts[stageInfo.name]||0)+1;
-    }
+  const brokerMap={};
+  leads.forEach(l=>{
+    const uid=l.responsible_user_id, name=users[uid]||`ID:${uid}`, sname=stages[l.status_id]?.name||'';
+    if(!brokerMap[uid]) brokerMap[uid]={name,uid,leads:[],stageCounts:{},newLeads:[]};
+    if(isActive(sname)){brokerMap[uid].leads.push(l);brokerMap[uid].stageCounts[sname]=(brokerMap[uid].stageCounts[sname]||0)+1;}
   });
-  newL.forEach(l => {
-    const uid = l.responsible_user_id;
-    if (!brokerMap[uid]) brokerMap[uid] = { name: users[uid]||`ID:${uid}`, uid, leads: [], stageCounts: {}, newLeads: [] };
+  newL.forEach(l=>{
+    const uid=l.responsible_user_id;
+    if(!brokerMap[uid]) brokerMap[uid]={name:users[uid]||`ID:${uid}`,uid,leads:[],stageCounts:{},newLeads:[]};
     brokerMap[uid].newLeads.push(l);
   });
 
-  // KPI
-  let totalQual = 0;
-  leads.forEach(l => { if ((stages[l.status_id]?.name||'').match(/^[3-9]\./)) totalQual++; });
-  const totalConv = newL.length > 0 ? Math.round(totalQual / newL.length * 100) : 0;
+  let totalQual=0;
+  leads.forEach(l=>{if(isQual(stages[l.status_id]?.name||''))totalQual++;});
+  const totalConv=newL.length>0?Math.round(totalQual/newL.length*100):0;
+  const activeLeads=leads.filter(l=>isActive(stages[l.status_id]?.name||''));
+  document.getElementById('kpi-total').textContent=activeLeads.length;
+  document.getElementById('kpi-new').textContent=newL.length;
+  document.getElementById('kpi-qual').textContent=totalQual;
+  document.getElementById('kpi-overdue').textContent=overdueTasks.length;
+  document.getElementById('kpi-conv').textContent=totalConv+'%';
 
-  const activeLeads = leads.filter(l => (stages[l.status_id]?.name||'').match(/^[3-9]\./));
-  document.getElementById('kpi-total').textContent = activeLeads.length;
-  document.getElementById('kpi-new').textContent = newL.length;
-  document.getElementById('kpi-qual').textContent = totalQual;
-  document.getElementById('kpi-overdue').textContent = overdueTasks.length;
-  document.getElementById('kpi-conv').textContent = totalConv + '%';
+  const brokers=Object.values(brokerMap).sort((a,b)=>b.leads.length-a.leads.length);
 
-  // ТАБЛИЦА 1: Активная воронка
-  const brokers = Object.values(brokerMap).sort((a,b) => b.leads.length - a.leads.length);
-  document.getElementById('funnel-tbody').innerHTML = brokers.map(b => {
-    const sc = b.stageCounts;
-    const qual = Object.entries(sc).filter(([s])=>s.match(/^[3-9]\./)).reduce((a,[,v])=>a+v,0);
-    const meeting = (sc['4. Встреча назначена']||0)+(sc['5. Встреча проведена']||0);
-    const show = (sc['6. Показ назначен']||0)+(sc['7. Показ проведен']||0);
-    const book = sc['8. Бронь объекта']||0;
-    const ddu = sc['9. Подписание ДДУ']||0;
-    const overdue = overdueByUser[b.uid]||0;
-    const noTask = b.leads.filter(l=>!leadsWithTasks.has(l.id)).length;
-    const conv = b.newLeads.length > 0 ? Math.round(qual/b.newLeads.length*100) : '—';
-    const convNum = typeof conv === 'number' ? conv : 0;
-    const odClass = overdue > 10 ? 'badge-danger' : overdue > 3 ? 'badge-warn' : '';
+  // Таблица 1
+  document.getElementById('funnel-tbody').innerHTML=brokers.map(b=>{
+    const sc=b.stageCounts;
+    const qual=Object.keys(sc).filter(s=>isQual(s)).reduce((a,s)=>a+sc[s],0);
+    const meet=Object.keys(sc).filter(s=>stageIs(s,'встреча')).reduce((a,s)=>a+sc[s],0);
+    const show=Object.keys(sc).filter(s=>stageIs(s,'показ')).reduce((a,s)=>a+sc[s],0);
+    const book=Object.keys(sc).filter(s=>stageIs(s,'бронь')).reduce((a,s)=>a+sc[s],0);
+    const deal=Object.keys(sc).filter(s=>stageIs(s,'сделка')).reduce((a,s)=>a+sc[s],0);
+    const overdue=overdueByUser[b.uid]||0;
+    const noTask=b.leads.filter(l=>!leadsWithTasks.has(l.id)).length;
+    const conv=b.newLeads.length>0?Math.round(qual/b.newLeads.length*100):'—';
+    const convNum=typeof conv==='number'?conv:0;
+    const odClass=overdue>10?'badge-danger':overdue>3?'badge-warn':'badge-muted';
     return `<tr>
       <td class="broker-name">${b.name}</td>
-      <td class="num">${b.leads.length}</td>
-      <td class="num">${qual}</td>
-      <td class="num">${meeting}</td>
-      <td class="num">${show}</td>
-      <td class="num">${book}</td>
-      <td class="num">${ddu}</td>
-      <td class="num"><span class="badge ${noTask>5?'badge-warn':''}">${noTask}</span></td>
+      <td class="num">${b.leads.length}</td><td class="num">${qual}</td>
+      <td class="num">${meet}</td><td class="num">${show}</td>
+      <td class="num">${book}</td><td class="num">${deal}</td>
+      <td class="num"><span class="badge ${noTask>5?'badge-warn':'badge-muted'}">${noTask}</span></td>
       <td class="num"><span class="badge ${odClass}">${overdue}</span></td>
-      <td class="num">
-        <div class="conv-bar">
-          <span style="font-size:12px">${typeof conv==='number'?conv+'%':'—'}</span>
-          <div class="conv-track"><div class="conv-fill" style="width:${Math.min(convNum,100)}%;background:${convNum>=33?'var(--green)':convNum>0?'var(--accent2)':'var(--border)'}"></div></div>
-        </div>
-      </td>
+      <td class="num"><div class="conv-bar"><span style="font-family:'Space Mono',monospace;font-size:12px">${typeof conv==='number'?conv+'%':'—'}</span><div class="conv-track"><div class="conv-fill" style="width:${Math.min(convNum,100)}%"></div></div></div></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="10" class="empty">Нет данных</td></tr>';
+  }).join('')||'<tr><td colspan="10" class="empty">Нет данных</td></tr>';
 
-  // ТАБЛИЦА 2: Новые лиды с разбивкой по тегам
-  document.getElementById('new-leads-tbody').innerHTML = brokers.map(b => {
-    const nl = b.newLeads;
-    if (!nl.length && !b.leads.length) return '';
-
-    // Теги
-    const tagMap = {};
-    nl.forEach(l => {
-      const tags = l._embedded?.tags||[];
-      const src = tags.length ? tags.map(t=>t.name).join('+') : 'Без тега';
-      tagMap[src] = (tagMap[src]||0)+1;
-    });
-    const tagPills = Object.entries(tagMap).sort((a,b)=>b[1]-a[1])
-      .map(([t,c]) => `<span class="tag-pill">${t}<span class="tag-count">${c}</span></span>`).join('');
-
-    // Этапы новых лидов
-    const beforeQual = nl.filter(l => {
-      const s = stages[l.status_id]?.name||'';
-      return !s.match(/^[3-9]\./) && !s.includes('Архив');
-    }).length;
-    const inWork = nl.filter(l => (stages[l.status_id]?.name||'').match(/^[3-9]\./)).length;
-    const archived = nl.filter(l => (stages[l.status_id]?.name||'').includes('Архив')).length;
-    const conv = nl.length > 0 ? Math.round(inWork/nl.length*100) : 0;
-
+  // Таблица 2
+  document.getElementById('new-leads-tbody').innerHTML=brokers.map(b=>{
+    const nl=b.newLeads;
+    if(!nl.length&&!b.leads.length) return '';
+    const tagMap={};
+    nl.forEach(l=>{const tags=l._embedded?.tags||[];const src=tags.length?tags.map(t=>t.name).join('+'):'Без тега';tagMap[src]=(tagMap[src]||0)+1;});
+    const tagPills=Object.entries(tagMap).sort((a,b)=>b[1]-a[1]).map(([t,c])=>`<span class="tag-pill">${t}<span class="tag-count">${c}</span></span>`).join('');
+    const beforeQual=nl.filter(l=>!isQual(stages[l.status_id]?.name||'')&&!isArchive(stages[l.status_id]?.name||'')).length;
+    const inWork=nl.filter(l=>isQual(stages[l.status_id]?.name||'')).length;
+    const archived=nl.filter(l=>isArchive(stages[l.status_id]?.name||'')).length;
+    const conv=nl.length>0?Math.round(inWork/nl.length*100):0;
     return `<tr>
       <td class="broker-name">${b.name}</td>
-      <td class="num"><strong style="font-family:'Bebas Neue',sans-serif;font-size:20px">${nl.length}</strong></td>
-      <td><div class="tag-pills">${tagPills || '<span style="color:var(--muted);font-size:11px">—</span>'}</div></td>
+      <td class="num"><strong style="font-family:'Space Mono',monospace;font-size:18px">${nl.length}</strong></td>
+      <td><div class="tag-pills">${tagPills||'<span style="color:var(--muted2);font-size:11px">—</span>'}</div></td>
       <td class="num"><span class="badge badge-muted">${beforeQual}</span></td>
       <td class="num"><span class="badge badge-ok">${inWork}</span></td>
-      <td class="num"><span class="badge ${archived>0?'badge-danger':''}">${archived}</span></td>
-      <td class="num">
-        <div class="conv-bar">
-          <span style="font-size:12px">${conv}%</span>
-          <div class="conv-track"><div class="conv-fill" style="width:${Math.min(conv,100)}%;background:${conv>=33?'var(--green)':conv>0?'var(--accent2)':'var(--border)'}"></div></div>
-        </div>
-      </td>
+      <td class="num"><span class="badge ${archived>0?'badge-danger':'badge-muted'}">${archived}</span></td>
+      <td class="num"><div class="conv-bar"><span style="font-family:'Space Mono',monospace;font-size:12px">${conv}%</span><div class="conv-track"><div class="conv-fill" style="width:${Math.min(conv,100)}%"></div></div></div></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="7" class="empty">Нет новых лидов за период</td></tr>';
+  }).join('')||'<tr><td colspan="7" class="empty">Нет новых лидов за период</td></tr>';
 
-  // Воронка — только этапы 3-9 Новостройки 2.0
-  const stageTotals = {};
-  leads.forEach(l => { const s = stages[l.status_id]?.name||''; if(s.match(/^[3-9]\./)) stageTotals[s]=(stageTotals[s]||0)+1; });
-  const maxVal = Math.max(...Object.values(stageTotals), 1);
-  const order = ['1. Новая заявка','2. Взят в работу','~ НЕ дозвонился','3. Квалифицирован','4. Встреча назначена','5. Встреча проведена','6. Показ назначен','7. Показ проведен','8. Бронь объекта','9. Подписание ДДУ','~ Архив'];
-  const funnelKeys = order.filter(s=>stageTotals[s]).concat(Object.keys(stageTotals).filter(s=>!order.includes(s)&&stageTotals[s]));
-  document.getElementById('funnel-wrap').innerHTML = funnelKeys.map(s=>`
-    <div class="funnel-row">
-      <div class="funnel-stage">${s}</div>
-      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.round(stageTotals[s]/maxVal*100)}%"></div></div>
-      <div class="funnel-count">${stageTotals[s]}</div>
-    </div>`).join('') || '<div class="empty">Нет данных</div>';
+  // Архивный блок
+  const total=newL.length;
+  const sryvOtkaz=newL.filter(l=>stageIs(stages[l.status_id]?.name||'','срыв','отказ'));
+  const second=newL.filter(l=>stageIs(stages[l.status_id]?.name||'','второе касание'));
+  const delayed=newL.filter(l=>stageIs(stages[l.status_id]?.name||'','отложено'));
+  function convStr(c){return total?Math.round(c/total*100)+'% от новых':'—';}
+  function brokerRows(list){
+    const map={};
+    list.forEach(l=>{const n=_lastUsers[l.responsible_user_id]||`ID:${l.responsible_user_id}`;map[n]=(map[n]||0)+1;});
+    return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>`<tr><td>${n}</td><td>${c}</td></tr>`).join('');
+  }
+  document.getElementById('archive-grid').innerHTML=`
+    <div class="archive-card">
+      <div class="archive-label">Срыв + Отказ не в работе</div>
+      <div class="archive-total">${sryvOtkaz.length}</div>
+      <div class="archive-conv">${convStr(sryvOtkaz.length)}</div>
+      <table class="archive-table">${brokerRows(sryvOtkaz)||'<tr><td style="color:var(--muted2)">—</td></tr>'}</table>
+    </div>
+    <div class="archive-card">
+      <div class="archive-label">Второе касание</div>
+      <div class="archive-total">${second.length}</div>
+      <div class="archive-conv">${convStr(second.length)}</div>
+      <table class="archive-table">${brokerRows(second)||'<tr><td style="color:var(--muted2)">—</td></tr>'}</table>
+    </div>
+    <div class="archive-card" style="border-right:none">
+      <div class="archive-label">Отложено</div>
+      <div class="archive-total">${delayed.length}</div>
+      <div class="archive-conv">${convStr(delayed.length)}</div>
+      <table class="archive-table">${brokerRows(delayed)||'<tr><td style="color:var(--muted2)">—</td></tr>'}</table>
+    </div>`;
+
+  // Воронка
+  const stageTotals={};
+  leads.forEach(l=>{const s=stages[l.status_id]?.name||'';if(isActive(s))stageTotals[s]=(stageTotals[s]||0)+1;});
+  const maxVal=Math.max(...Object.values(stageTotals),1);
+  document.getElementById('funnel-wrap').innerHTML=Object.entries(stageTotals).sort((a,b)=>b[1]-a[1]).map(([s,c])=>`
+    <div class="funnel-row"><div class="funnel-stage">${s}</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.round(c/maxVal*100)}%"></div></div><div class="funnel-count">${c}</div></div>`
+  ).join('')||'<div class="empty">Нет данных</div>';
 
   // Источники
-  const srcTotals = {};
-  newL.forEach(l => {
-    const tags = l._embedded?.tags||[];
-    const src = tags.length ? tags.map(t=>t.name).join(', ') : 'Без тега';
-    srcTotals[src]=(srcTotals[src]||0)+1;
-  });
-  const srcMax = Math.max(...Object.values(srcTotals),1);
-  document.getElementById('sources-wrap').innerHTML = Object.entries(srcTotals).sort((a,b)=>b[1]-a[1]).map(([s,c])=>`
-    <div class="funnel-row">
-      <div class="funnel-stage">${s}</div>
-      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${Math.round(c/srcMax*100)}%;background:var(--accent2)"></div></div>
-      <div class="funnel-count">${c}</div>
-    </div>`).join('') || '<div class="empty">Нет данных</div>';
+  const srcTotals={};
+  newL.forEach(l=>{const tags=l._embedded?.tags||[];const src=tags.length?tags.map(t=>t.name).join(', '):'Без тега';srcTotals[src]=(srcTotals[src]||0)+1;});
+  const srcMax=Math.max(...Object.values(srcTotals),1);
+  document.getElementById('sources-wrap').innerHTML=Object.entries(srcTotals).sort((a,b)=>b[1]-a[1]).map(([s,c])=>`
+    <div class="funnel-row"><div class="funnel-stage">${s}</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="background:var(--muted);width:${Math.round(c/srcMax*100)}%"></div></div><div class="funnel-count">${c}</div></div>`
+  ).join('')||'<div class="empty">Нет данных</div>';
 
-  // Фильтр и детальный список
-  const brokerNames = [...new Set(newL.map(l=>users[l.responsible_user_id]||`ID:${l.responsible_user_id}`))].sort();
-  document.getElementById('broker-filter').innerHTML =
-    `<button class="filter-btn active" onclick="filterLeads('all',event)">Все</button>` +
+  // Детальный список
+  const brokerNames=[...new Set(newL.map(l=>users[l.responsible_user_id]||`ID:${l.responsible_user_id}`))].sort();
+  document.getElementById('broker-filter').innerHTML=
+    `<button class="filter-btn active" onclick="filterLeads('all',event)">ВСЕ</button>`+
     brokerNames.map(n=>`<button class="filter-btn" onclick="filterLeads('${n}',event)">${n}</button>`).join('');
   renderLeads(newL);
 }
 
-function filterLeads(broker, e) {
-  currentBrokerFilter = broker;
+function filterLeads(broker,e){
+  currentBrokerFilter=broker;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   if(e) e.target.classList.add('active');
   renderLeads(newLeads);
 }
 
-function renderLeads(leads) {
-  const u = _lastUsers, s = _lastStages;
-  const filtered = currentBrokerFilter==='all' ? leads : leads.filter(l=>(u[l.responsible_user_id]||'')=== currentBrokerFilter);
-  const tbody = document.getElementById('leads-tbody');
-  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="6" class="empty">Нет лидов</td></tr>'; return; }
-  tbody.innerHTML = filtered.sort((a,b)=>b.created_at-a.created_at).slice(0,200).map(l => {
-    const d = new Date(l.created_at*1000);
-    const ds = d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-    const broker = u[l.responsible_user_id]||`ID:${l.responsible_user_id}`;
-    const tags = l._embedded?.tags?.map(t=>t.name).join(', ')||'—';
-    const stageInfo = s[l.status_id]||{name:'—'};
-    const sc = stageInfo.name.match(/^[3-9]\./) ? 'badge-ok' : stageInfo.name.includes('Архив') ? 'badge-danger' : 'badge-muted';
+function renderLeads(leads){
+  const u=_lastUsers, s=_lastStages;
+  const filtered=currentBrokerFilter==='all'?leads:leads.filter(l=>(u[l.responsible_user_id]||'')===currentBrokerFilter);
+  const tbody=document.getElementById('leads-tbody');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="6" class="empty">Нет лидов</td></tr>';return;}
+  tbody.innerHTML=filtered.sort((a,b)=>b.created_at-a.created_at).slice(0,200).map(l=>{
+    const d=new Date(l.created_at*1000);
+    const ds=d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const broker=u[l.responsible_user_id]||`ID:${l.responsible_user_id}`;
+    const tags=l._embedded?.tags?.map(t=>t.name).join(', ')||'—';
+    const sname=s[l.status_id]?.name||'—';
+    const sc=isQual(sname)?'badge-ok':isArchive(sname)?'badge-danger':'badge-muted';
     return `<tr>
-      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted2)">${ds}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted2)">${ds}</td>
       <td style="font-size:12px">${broker}</td>
       <td style="color:var(--muted2);font-size:11px">${tags}</td>
-      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px">
-        <a href="https://laresgroup.amocrm.ru/leads/detail/${l.id}" target="_blank" style="color:var(--accent);text-decoration:none">${l.id}</a>
-      </td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px"><a href="https://laresgroup.amocrm.ru/leads/detail/${l.id}" target="_blank" style="color:var(--text);text-decoration:underline">${l.id}</a></td>
       <td style="font-size:12px">${l.name||'—'}</td>
-      <td><span class="badge ${sc}" style="font-size:10px">${stageInfo.name}</span></td>
+      <td><span class="badge ${sc}" style="font-size:10px">${sname}</span></td>
     </tr>`;
   }).join('');
 }
+
+function stageIs(name,...keys){const n=(name||'').toLowerCase();return keys.some(k=>n.includes(k.toLowerCase()));}
 
 loadConfig();
 </script>
